@@ -1,0 +1,200 @@
+clc;
+clear;
+close all;
+
+%% ================= USER INPUT =================
+disp('===== ENTER YOUR DETAILS =====');
+
+name = input('Enter Name: ','s');
+age = input('Enter Age: ');
+weight = input('Enter Weight (kg): ');
+height = input('Enter Height (m): ');
+gender = input('Enter Gender (male/female): ','s');
+goal = input('Enter Goal (loss/gain/maintain): ','s');
+
+%% ================= BMI =================
+bmi = weight/(height^2);
+
+fprintf('\n===== USER DETAILS =====\n');
+fprintf('Name: %s\n', name);
+fprintf('Age: %d\n', age);
+fprintf('BMI: %.2f\n', bmi);
+
+if bmi < 18.5
+    disp('Status: Underweight');
+elseif bmi < 25
+    disp('Status: Normal');
+else
+    disp('Status: Overweight');
+end
+
+%% ================= BMR =================
+if strcmpi(gender,'male')
+    bmr = 10*weight + 6.25*(height*100) - 5*age + 5;
+else
+    bmr = 10*weight + 6.25*(height*100) - 5*age - 161;
+end
+
+%% ================= TARGET CALORIES =================
+if strcmpi(goal,'loss')
+    target_cal = bmr - 500;
+elseif strcmpi(goal,'gain')
+    target_cal = bmr + 500;
+else
+    target_cal = bmr;
+end
+
+fprintf('Target Calories: %.2f kcal\n', target_cal);
+
+%% ================= LOAD DATASET =================
+data = readtable('food_nutrition_100.csv');
+
+%% ================= LOAD IMAGE =================
+[file, path] = uigetfile({'*.jpg;*.png;*.jpeg'}, 'Select Food Image');
+
+if isequal(file,0)
+    error('No image selected');
+end
+
+img = imread(fullfile(path, file));
+
+figure;
+imshow(img);
+title('Uploaded Image');
+
+%% ================= LOAD RESNET =================
+net = resnet50;
+
+%% ================= PREPROCESS =================
+inputSize = net.Layers(1).InputSize(1:2);
+img_resized = imresize(img, inputSize);
+
+%% ================= CLASSIFICATION =================
+[label, scores] = classify(net, img_resized);
+detected_food = lower(string(label));
+
+fprintf('\nDetected Food (AI): %s\n', detected_food);
+
+%% ================= SMART MAPPING (FIXED) =================
+if contains(detected_food,"waffle")
+    detected_food = "waffle";
+
+elseif contains(detected_food,"burger")
+    detected_food = "burger";
+
+elseif contains(detected_food,"pizza")
+    detected_food = "pizza";
+
+elseif contains(detected_food,"sandwich")
+    detected_food = "sandwich";
+
+elseif contains(detected_food,"noodle")
+    detected_food = "noodles";
+
+elseif contains(detected_food,"bread")
+    detected_food = "roti";
+
+elseif contains(detected_food,"rice")
+    detected_food = "rice";
+end
+
+%% ================= MATCH WITH DATASET =================
+food_list = lower(string(data.Food));
+
+idx = find(food_list == detected_food, 1);
+
+if isempty(idx)
+    idx = find(contains(food_list, detected_food), 1);
+end
+
+if isempty(idx)
+    idx = 1;
+end
+
+matched_food = data.Food{idx};
+fprintf('Matched Food: %s\n', matched_food);
+
+%% ================= NUTRITION =================
+calories_100g = data.Calories(idx);
+carbs_100g = data.Carbs(idx);
+protein_100g = data.Protein(idx);
+fat_100g = data.Fat(idx);
+
+%% ================= QUANTITY ESTIMATION =================
+gray = rgb2gray(img);
+bw = imbinarize(gray);
+
+ratio = sum(bw(:)) / numel(bw);
+
+if ratio < 0.25
+    quantity = 100;
+elseif ratio < 0.55
+    quantity = 200;
+else
+    quantity = 300;
+end
+
+%% ================= FINAL CALCULATION =================
+final_calories = (calories_100g * quantity) / 100;
+final_carbs = (carbs_100g * quantity) / 100;
+final_protein = (protein_100g * quantity) / 100;
+final_fat = (fat_100g * quantity) / 100;
+
+fprintf('\nEstimated Quantity: %d grams\n', quantity);
+fprintf('Calories: %.2f kcal\n', final_calories);
+fprintf('Carbs: %.2f g\n', final_carbs);
+fprintf('Protein: %.2f g\n', final_protein);
+fprintf('Fat: %.2f g\n', final_fat);
+
+%% ================= HEALTHY ALTERNATIVES (VARIETY FIX) =================
+fprintf('\n===== HEALTHY ALTERNATIVES =====\n');
+
+healthy_list = ["apple","banana","orange","guava","watermelon","pineapple", ...
+                "milk","curd","brown rice","roti","mixed veg"];
+
+healthyIdx = [];
+
+for i = 1:length(data.Food)
+    if any(strcmpi(data.Food{i}, healthy_list))
+        healthyIdx(end+1) = i;
+    end
+end
+
+if isempty(healthyIdx)
+    fprintf('No healthy foods available.\n');
+else
+    current_cal = calories_100g;
+
+    % Wider range for variety
+    tolerance = 80;
+    similarIdx = healthyIdx(abs(data.Calories(healthyIdx) - current_cal) <= tolerance);
+
+    if isempty(similarIdx)
+        similarIdx = healthyIdx;
+    end
+
+    % Random selection
+    randIdx = similarIdx(randperm(length(similarIdx)));
+
+    n = min(2, length(randIdx));
+
+    for i = 1:n
+        altFood = data.Food{randIdx(i)};
+        altCal = data.Calories(randIdx(i));
+        fprintf('Healthy Alternative %d: %s (%.0f kcal)\n', i, altFood, altCal);
+    end
+end
+
+%% ================= TARGET CHECK =================
+if final_calories > target_cal
+    fprintf('\n⚠ High calorie intake compared to target!\n');
+else
+    fprintf('\n✅ Fits your diet.\n');
+end
+
+%% ================= GRAPH =================
+figure;
+bar([target_cal final_calories]);
+set(gca,'XTickLabel',{'Target','Consumed'});
+ylabel('Calories');
+title('Calorie Comparison');
