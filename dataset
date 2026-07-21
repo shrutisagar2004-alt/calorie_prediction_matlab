@@ -1,0 +1,52 @@
+Food,Calories,Carbs,Protein,Fat
+rice,130,28,2.4,0.3
+jeera rice,150,30,3,4
+fried rice,165,28,4,5
+veg pulao,180,32,4,6
+biryani,250,30,8,10
+brown rice,112,23,2.6,0.9
+roti,120,25,3,1
+butter roti,160,26,3,6
+naan,290,45,9,7
+butter naan,330,48,9,11
+paratha,300,40,6,15
+aloo paratha,320,45,6,14
+paneer curry,265,6,18,20
+palak paneer,230,8,12,18
+chicken curry,220,0,25,12
+butter chicken,290,6,24,18
+egg curry,180,5,12,12
+dal,116,20,9,0.5
+dal makhani,210,20,9,11
+chole,210,27,9,7
+rajma,127,22,8.7,0.5
+mixed veg,80,10,3,0.5
+aloo sabzi,140,25,3,4
+bhindi sabzi,90,12,2,4
+gobi sabzi,100,15,3,4
+samosa,260,30,4,17
+pakora,300,30,6,18
+vada,280,35,6,12
+dosa,170,27,4,4
+masala dosa,250,35,5,8
+idli,58,12,2,0.4
+upma,230,40,6,6
+poha,180,30,3,5
+burger,295,30,17,12
+pizza,266,33,11,10
+sandwich,250,30,12,8
+french fries,312,41,3.4,15
+waffle,291,33,7,14
+pancake,227,28,6,10
+noodles,158,25,5,6
+apple,52,14,0.3,0.2
+banana,89,23,1.1,0.3
+orange,47,12,0.9,0.1
+grapes,69,18,0.7,0.2
+watermelon,30,8,0.6,0.2
+mango,60,15,0.8,0.4
+pineapple,50,13,0.5,0.1
+guava,68,14,2.6,1
+curd,98,4.7,11,4.3
+milk,42,5,3.4,1
+paneer,265,1.2,18,20
